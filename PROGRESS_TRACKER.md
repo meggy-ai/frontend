@@ -10,7 +10,7 @@
 
 | Phase | Name | Status | Progress | Start Date | End Date | Notes |
 |-------|------|--------|----------|------------|----------|-------|
-| 0 | Project Setup & Infrastructure | 🔲 Not Started | 0% (0/20) | - | - | Foundation setup |
+| 0 | Project Setup & Infrastructure | 🔲 Not Started | 0% (0/22) | - | - | Foundation setup |
 | 1 | Core Foundation & Design System | 🔲 Not Started | 0% (0/20) | - | - | Blocked by Phase 0 |
 | 2 | Backend Integration & API Layer | 🔲 Not Started | 0% (0/20) | - | - | Blocked by Phase 1 |
 | 3 | Authentication & User Management | 🔲 Not Started | 0% (0/15) | - | - | Blocked by Phase 2 |
@@ -48,7 +48,7 @@
 ## 📋 Phase 0: Project Setup & Infrastructure
 
 **Status:** 🔲 Not Started  
-**Progress:** 0/20 tasks (0%)  
+**Progress:** 0/22 tasks (0%)  
 **Timeline:** Week 1  
 **Owner:** TBD
 
@@ -59,12 +59,14 @@
 - [ ] 0.1.4 - Set up folder structure as per specification
 - [ ] 0.1.5 - Create .env.example with all required variables
 
-### Parent Task 0.2: Development Environment (0/5)
+### Parent Task 0.2: Development Environment (0/7)
 - [ ] 0.2.1 - Configure ESLint and Prettier
-- [ ] 0.2.2 - Set up Husky and lint-staged
-- [ ] 0.2.3 - Configure VS Code settings and extensions
-- [ ] 0.2.4 - Set up TypeScript strict mode
-- [ ] 0.2.5 - Configure path aliases (@/, @components/, etc.)
+- [ ] 0.2.2 - Set up Husky and lint-staged (pre-commit hooks)
+- [ ] 0.2.3 - Configure pre-commit checks (lint, format, type-check)
+- [ ] 0.2.4 - Add commitlint for commit message validation
+- [ ] 0.2.5 - Configure VS Code settings and extensions
+- [ ] 0.2.6 - Set up TypeScript strict mode
+- [ ] 0.2.7 - Configure path aliases (@/, @components/, etc.)
 
 ### Parent Task 0.3: Git & GitHub Setup (0/5)
 - [ ] 0.3.1 - Create .gitignore with Next.js defaults
@@ -84,6 +86,7 @@
 - Critical foundation phase - must complete before proceeding
 - Ensure all team members have development environment set up
 - Review and approve folder structure before implementation
+- Pre-commit hooks will catch issues before commits (lint, format, type-check)
 
 ---
 
@@ -373,11 +376,11 @@
 **Blocked by:** Phase 7
 
 ### Parent Task 8.1: GitHub Actions Setup (0/5)
-- [ ] 8.1.1 - Create CI workflow
-- [ ] 8.1.2 - Add CD workflow for staging
-- [ ] 8.1.3 - Create production deployment workflow
-- [ ] 8.1.4 - Set up PR preview deployments
-- [ ] 8.1.5 - Add security scanning
+- [ ] 8.1.1 - Create simple CI workflow using Next.js starter template
+- [ ] 8.1.2 - Add basic CD workflow for staging (start simple)
+- [ ] 8.1.3 - Create production deployment workflow (Vercel or standard template)
+- [ ] 8.1.4 - Set up PR preview deployments (Vercel integration)
+- [ ] 8.1.5 - Add security scanning (Dependabot, expand with Snyk later)
 
 ### Parent Task 8.2: Docker & Containerization (0/5)
 - [ ] 8.2.1 - Create production Dockerfile
@@ -394,8 +397,10 @@
 - [ ] 8.3.5 - Set up error tracking (Sentry)
 
 **Phase 8 Notes:**
-- Set up CI/CD early to catch issues quickly
-- Automate as much as possible
+- Start with simple GitHub Actions templates - don't over-engineer
+- Use Next.js official workflow templates as starting point
+- Vercel integration recommended for easiest setup
+- Iterate and enhance workflows as needs grow
 
 ---
 
@@ -489,17 +494,23 @@
 - ✅ Created progress tracker (PROGRESS_TRACKER.md)
 - ✅ Examined bruno-core and bruno-llm repositories
 - ✅ Defined repository structure and architecture
+- ✅ Added pre-commit hooks configuration (lint, format, type-check, commitlint)
+- ✅ Added simplified CI/CD workflow templates for starters
+- ✅ Documented progressive enhancement strategy for workflows
 
 **Next Session Plan:**
 - Begin Phase 0: Project Setup & Infrastructure
 - Initialize Next.js 14 project
-- Set up development environment
+- Set up development environment with pre-commit hooks
 - Configure Tailwind CSS and shadcn/ui
+- Set up simple CI workflow using starter templates
 
 **Notes:**
 - Design should be minimalistic with GitHub/Medium dark theme inspiration
 - Mobile-first approach is critical
 - Real-time chat with streaming is the core feature
+- Pre-commit hooks will catch issues before commits (saves time in CI)
+- Start with simple CI/CD templates, iterate later (pragmatic approach)
 
 ---
 

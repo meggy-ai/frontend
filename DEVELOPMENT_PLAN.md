@@ -40,15 +40,16 @@
 
 **Development Tools:**
 - **ESLint** + **Prettier** (Code quality)
-- **Husky** + **lint-staged** (Git hooks)
+- **Husky** + **lint-staged** (Git hooks with pre-commit checks)
+- **commitlint** (Commit message validation - Conventional Commits)
 - **Jest** + **React Testing Library** (Unit tests)
 - **Playwright** or **Cypress** (E2E tests)
-- **Storybook** (Component documentation)
+- **Storybook** (Component documentation - optional for Phase 1)
 
 **CI/CD & Deployment:**
-- **GitHub Actions** (CI/CD pipeline)
-- **Docker** (Containerization)
-- **Vercel** or **Self-hosted** (Deployment options)
+- **GitHub Actions** (CI/CD pipeline with starter templates)
+- **Vercel** (Recommended for easy deployment) or **Self-hosted**
+- **Docker** (Containerization for production/self-hosted)
 
 ---
 
@@ -254,10 +255,12 @@ frontend/
 
 #### Parent Task 0.2: Development Environment
 - [ ] 0.2.1 - Configure ESLint and Prettier
-- [ ] 0.2.2 - Set up Husky and lint-staged
-- [ ] 0.2.3 - Configure VS Code settings and extensions
-- [ ] 0.2.4 - Set up TypeScript strict mode
-- [ ] 0.2.5 - Configure path aliases (@/, @components/, etc.)
+- [ ] 0.2.2 - Set up Husky and lint-staged (pre-commit hooks)
+- [ ] 0.2.3 - Configure pre-commit checks (lint, format, type-check)
+- [ ] 0.2.4 - Add commitlint for commit message validation
+- [ ] 0.2.5 - Configure VS Code settings and extensions
+- [ ] 0.2.6 - Set up TypeScript strict mode
+- [ ] 0.2.7 - Configure path aliases (@/, @components/, etc.)
 
 #### Parent Task 0.3: Git & GitHub Setup
 - [ ] 0.3.1 - Create .gitignore with Next.js defaults
@@ -505,11 +508,11 @@ frontend/
 **Priority:** High
 
 #### Parent Task 8.1: GitHub Actions Setup
-- [ ] 8.1.1 - Create CI workflow (lint, test, build)
-- [ ] 8.1.2 - Add CD workflow for staging
-- [ ] 8.1.3 - Create production deployment workflow
-- [ ] 8.1.4 - Set up automatic PR preview deployments
-- [ ] 8.1.5 - Add security scanning (Snyk, Dependabot)
+- [ ] 8.1.1 - Create simple CI workflow using Next.js starter template (lint, test, build)
+- [ ] 8.1.2 - Add basic CD workflow for staging (start simple, iterate later)
+- [ ] 8.1.3 - Create production deployment workflow (use Vercel or standard Next.js template)
+- [ ] 8.1.4 - Set up automatic PR preview deployments (Vercel integration)
+- [ ] 8.1.5 - Add security scanning (Dependabot for starters, expand with Snyk later)
 
 #### Parent Task 8.2: Docker & Containerization
 - [ ] 8.2.1 - Create production Dockerfile
@@ -683,6 +686,261 @@ frontend/
 
 ---
 
+## 🔄 CI/CD Workflow Templates (Simplified for Starters)
+
+### Approach: Start Simple, Iterate Later
+
+For the initial setup, we'll use **simple, battle-tested templates** rather than complex custom workflows. This approach:
+- ✅ Gets CI/CD running quickly
+- ✅ Uses proven patterns from the community
+- ✅ Can be enhanced incrementally as needs grow
+- ✅ Reduces maintenance burden
+
+### Recommended Workflow Structure
+
+#### 1. **CI Workflow** (`.github/workflows/ci.yml`) - Run on every PR
+
+**Purpose:** Catch issues before merging
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm type-check
+      - run: pnpm test:ci
+      - run: pnpm build
+```
+
+**What it does:**
+- Installs dependencies
+- Runs linter (ESLint)
+- Type checks (TypeScript)
+- Runs tests (Jest)
+- Builds the app (validates no build errors)
+
+#### 2. **CD Workflow for Vercel** (`.github/workflows/deploy.yml`) - Auto-deploy
+
+**Purpose:** Automatic deployments to staging/production
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]  # Production
+  pull_request:
+    branches: [main]  # Preview deployments
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+```
+
+**Alternative: Manual Deployment**
+If using self-hosted or other platforms, Vercel's GitHub integration handles this automatically.
+
+#### 3. **Test Workflow** (`.github/workflows/test.yml`) - Comprehensive Testing
+
+**Purpose:** Run full test suite including E2E tests
+
+```yaml
+name: Tests
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      - run: pnpm test:coverage
+      
+      - uses: codecov/codecov-action@v3  # Optional: upload coverage
+        if: always()
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      - run: pnpm playwright install --with-deps
+      - run: pnpm test:e2e
+```
+
+#### 4. **Release Workflow** (`.github/workflows/release.yml`) - Automated Releases
+
+**Purpose:** Create releases and changelogs
+
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get all tags
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      # Auto-generate release notes
+      - uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+```
+
+### Starter Templates to Use
+
+Instead of building from scratch, use these proven templates:
+
+1. **Next.js Official Template:**
+   - https://github.com/vercel/next.js/tree/canary/.github/workflows
+   - Pre-configured for Next.js best practices
+
+2. **TypeScript React Template:**
+   - https://github.com/actions/starter-workflows/blob/main/ci/node.js.yml
+   - Covers basic CI needs
+
+3. **Vercel GitHub Integration:**
+   - Recommended: Just connect repository to Vercel
+   - Auto-handles preview deployments and production
+   - No workflow file needed initially
+
+### Progressive Enhancement Strategy
+
+**Phase 1 (Weeks 1-5):** Minimal CI
+```
+✓ Basic CI workflow (lint, type-check, test, build)
+✓ Vercel auto-deployment
+✓ Dependabot for dependency updates
+```
+
+**Phase 2 (Weeks 6-10):** Add Testing
+```
+✓ Separate test workflow with coverage
+✓ E2E tests in CI
+✓ PR preview deployments
+```
+
+**Phase 3 (Weeks 11-15):** Production-Ready
+```
+✓ Release automation
+✓ Security scanning (Snyk)
+✓ Performance monitoring
+✓ Lighthouse CI
+```
+
+**Phase 4 (Post-Launch):** Advanced Features
+```
+✓ Automated dependency updates with testing
+✓ Canary deployments
+✓ A/B testing infrastructure
+✓ Advanced monitoring and alerts
+```
+
+### Package.json Scripts for CI/CD
+
+Add these scripts to support CI workflows:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "prepare": "husky install",
+    "precommit": "lint-staged"
+  }
+}
+```
+
+### Benefits of This Approach
+
+✅ **Quick Setup:** Workflows can be set up in < 1 hour  
+✅ **Low Maintenance:** Using standard templates means less debugging  
+✅ **Community Support:** Popular patterns have extensive documentation  
+✅ **Scalable:** Easy to add more checks as project grows  
+✅ **Cost Effective:** Minimal GitHub Actions minutes usage  
+
+### When to Enhance Workflows
+
+**Add more complexity when:**
+- Team grows beyond 3-5 developers
+- Deployment frequency increases (> 5 per day)
+- Need advanced features (canary, blue-green deployments)
+- Experiencing CI/CD bottlenecks
+- Security/compliance requirements increase
+
+---
+
 ## 📝 Coding Standards
 
 ### TypeScript Best Practices
@@ -754,10 +1012,54 @@ pnpm install
 # Copy environment variables
 cp .env.example .env.local
 
+# Husky will automatically set up pre-commit hooks
+# Manual setup if needed:
+pnpm prepare
+
 # Run development server
 pnpm dev
 
 # Open http://localhost:3000
+```
+
+### Pre-commit Hooks
+
+Pre-commit hooks automatically run checks before each commit to catch issues early:
+
+**What gets checked before commit:**
+- ✅ Code formatting (Prettier)
+- ✅ Linting errors (ESLint)
+- ✅ TypeScript type checking
+- ✅ Commit message format (Conventional Commits via commitlint)
+
+**If checks fail:**
+- Commit is blocked until issues are fixed
+- Review error messages and fix the reported issues
+- Stage your fixes and commit again
+
+**Manual check commands:**
+```bash
+# Run all pre-commit checks manually
+pnpm lint       # ESLint
+pnpm format     # Prettier
+pnpm type-check # TypeScript
+
+# Fix auto-fixable issues
+pnpm lint:fix
+pnpm format:fix
+```
+
+**Commit message format (Conventional Commits):**
+```bash
+# Good commits
+git commit -m "feat: add chat streaming functionality"
+git commit -m "fix: resolve websocket connection issue"
+git commit -m "docs: update API integration guide"
+git commit -m "test: add unit tests for chat components"
+
+# Bad commits (will be rejected)
+git commit -m "updates"
+git commit -m "fixed stuff"
 ```
 
 ---
