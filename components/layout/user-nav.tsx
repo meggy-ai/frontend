@@ -10,14 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Settings, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/lib/stores/auth-store";
 import { useLogout } from "@/lib/hooks/use-auth";
+import { usePermissions } from "@/lib/hooks/use-permissions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export function UserNav() {
   const { user } = useAuth();
+  const { canAccessAdmin } = usePermissions();
   const logoutMutation = useLogout();
   const router = useRouter();
 
@@ -73,6 +75,14 @@ export function UserNav() {
             <span>Settings</span>
           </Link>
         </DropdownMenuItem>
+        {canAccessAdmin() && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin">
+              <Shield className="mr-2 h-4 w-4" />
+              <span>Admin Panel</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}

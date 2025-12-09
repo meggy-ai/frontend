@@ -6,13 +6,20 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   avatar?: string;
-  isActive: boolean;
-  isEmailVerified: boolean;
-  dateJoined: string;
-  lastLogin?: string;
+  is_active: boolean;
+  is_email_verified: boolean;
+  is_onboarding_completed: boolean;
+  role: "admin" | "user" | "moderator";
+  date_joined: string;
+  last_login?: string;
+  bio?: string;
+  location?: string;
+  company?: string;
+  job_title?: string;
+  website?: string;
   preferences: UserPreferences;
 }
 

@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
     DELETE_ACCOUNT: "/users/delete/",
     UPLOAD_AVATAR: "/users/avatar/",
     PREFERENCES: "/users/preferences/",
+    COMPLETE_ONBOARDING: "/users/complete-onboarding/",
   },
 
   // Health and utility endpoints

@@ -78,8 +78,8 @@ export function RegisterForm() {
         password: formData.password,
       });
 
-      // Redirect to verification page
-      router.push("/auth/verify-email");
+      // Redirect to onboarding for new users
+      router.push("/onboarding");
     } catch {
       // Error is handled by the mutation
     }

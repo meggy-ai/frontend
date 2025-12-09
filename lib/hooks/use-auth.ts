@@ -217,3 +217,23 @@ export const useResendVerification = () => {
     },
   });
 };
+
+export const useCompleteOnboarding = () => {
+  const { updateUser } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post(ENDPOINTS.USERS.COMPLETE_ONBOARDING);
+      return response.data;
+    },
+    onSuccess: () => {
+      updateUser({ is_onboarding_completed: true });
+      toast.success("Onboarding completed!");
+    },
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError)?.response?.data?.message || "Failed to complete onboarding";
+      toast.error(message);
+    },
+  });
+};
