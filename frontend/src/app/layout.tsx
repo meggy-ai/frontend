@@ -4,6 +4,7 @@ import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/lib/providers/query-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -32,8 +33,10 @@ export default function RootLayout({
       <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <QueryProvider>
-            {children}
-            <Toaster position="top-right" richColors closeButton expand={true} />
+            <AuthProvider>
+              {children}
+              <Toaster position="top-right" richColors closeButton expand={true} />
+            </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

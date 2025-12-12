@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,37 +8,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLogin } from "@/lib/hooks/use-auth";
-import { useAuth } from "@/lib/stores/auth-store";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [localError, setLocalError] = useState("");
 
-  const router = useRouter();
-  const { error, clearError } = useAuth();
-  const loginMutation = useLogin();
+  const { login, loading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    setLocalError("");
 
     if (!email || !password) {
+      setLocalError("Please fill in all fields");
       return;
     }
 
     try {
-      await loginMutation.mutateAsync({
-        email: email.trim().toLowerCase(),
-        password,
-      });
-
-      // Redirect to dashboard on successful login
-      router.push("/dashboard");
-    } catch {
-      // Error is handled by the mutation
+      await login(email.trim().toLowerCase(), password);
+      // Redirect is handled by AuthContext
+    } catch (err: any) {
+      setLocalError(err.message || "Login failed");
     }
   };
 
@@ -53,9 +45,9 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+          {(error || localError) && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{error || localError}</AlertDescription>
             </Alert>
           )}
 
@@ -100,30 +92,12 @@ export function LoginForm() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <input
-                id="remember"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="remember" className="text-sm">
-                Remember me
-              </Label>
-            </div>
-            <Link href="/auth/forgot-password" className="text-primary text-sm hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
           <Button
             type="submit"
             className="w-full"
-            disabled={loginMutation.isPending || !email || !password}
+            disabled={loading || !email || !password}
           >
-            {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
 
