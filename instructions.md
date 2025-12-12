@@ -1,14 +1,30 @@
-Can you please go through above plan
-1.0 Design the repo as per the recommended formats for open source code
-2.0 This is part of meggy-ai platform
-3.0 Other components of meggy-ai platform are bruno-core at 
-    https://github.com/meggy-ai/bruno-core
-4.0 Other components of meggy-ai platform are at https://github.com/meggy-ai/bruno-llm
-5.0 Make sure design the repo structure as per the recommended layouts
-used for all purposes like dev, test , deploy with CI,CD etc
-6.0 You need to create a plan first with parent tasks and children tasks
-7.0 Create a progress tracker in the plan so that we will keep track of the 
+This repo is part of meggy-ai platform which contains following components:
+GitHub Organization: "bruno-ai"
+├── Repository: bruno-core
+├── Repository: bruno-llm
+├── Repository: bruno-memory
+├── Repository: bruno-abilities
+└── Repository: bruno-pa-webapp
+
+I have completed bruno-core and bruno-llm and their repos are at following links :
+below are the completed repos :
+https://github.com/meggy-ai/bruno-core
+https://github.com/meggy-ai/bruno-llm
+https://github.com/meggy-ai/bruno-memory
+https://github.com/meggy-ai/bruno-abilities
+
+All the details about project overview is in project_overview.md.
+
+1.0 You need to create a plan first with parent tasks and children tasks
+with details from project-overview,first create a small set of feature to complete in first iteration
+create a requirement-overview.md which has this small set of feature for first iteration,
+next create a plan for implementation of this requirement,
+we need to restructure entire app into frontend and backend as per the details captured in project-overview.md.
+also make sure you cover all the core and foundation taken care of in the first iteration itself,
+from next iteration we will try to plan to add functionality as a new feature in subsequent iterations
+ask me if you have any questions
+2.0 Create a progress tracker in the plan so that we will keep track of the
 implementation phase by phase, in case you will doing a particular task
 we will know where we left off and what to do next
-8.0 After creating plan we will start implementation one by one
-9.0 create an md file for the plan 
+3.0 After creating plan we will start implementation one by one
+4.0 create an md file for the plan
