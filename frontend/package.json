@@ -19,11 +19,11 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "\"C:/Program Files/nodejs/npx.cmd\" eslint --fix",
+    "frontend/**/*.{js,jsx,ts,tsx}": [
+      "cd frontend && \"C:/Program Files/nodejs/npx.cmd\" eslint --fix",
       "\"C:/Program Files/nodejs/npx.cmd\" prettier --write"
     ],
-    "*.{json,md,css}": [
+    "frontend/**/*.{json,md,css}": [
       "\"C:/Program Files/nodejs/npx.cmd\" prettier --write"
     ]
   },
