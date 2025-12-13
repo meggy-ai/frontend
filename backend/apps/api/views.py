@@ -96,6 +96,13 @@ class ConversationViewSet(viewsets.ModelViewSet):
             content=content
         )
         
+        # Update conversation title if this is the first message
+        if conversation.messages.count() == 1 and conversation.title == 'New Conversation':
+            # Generate title from first user message (first 50 chars)
+            new_title = content[:50] + ('...' if len(content) > 50 else '')
+            conversation.title = new_title
+            conversation.save()
+        
         try:
             # Process message through Bruno chat service
             response = async_to_sync(chat_service.process_message)(
