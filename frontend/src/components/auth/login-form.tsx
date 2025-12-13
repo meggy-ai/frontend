@@ -36,15 +36,18 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-center text-2xl font-bold">Sign In</CardTitle>
-        <CardDescription className="text-center">
-          Enter your credentials to access your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="mx-auto w-full max-w-md p-8 bg-white/90 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-200">
+      <div className="text-center mb-6">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+          <div className="h-6 w-6 rounded-full bg-blue-500"></div>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Welcome Back
+        </h2>
+        <p className="text-gray-600">Sign in to continue to Meggy AI</p>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
           {(error || localError) && (
             <Alert variant="destructive">
               <AlertDescription>{error || localError}</AlertDescription>
@@ -92,23 +95,24 @@ export function LoginForm() {
             </div>
           </div>
 
-          <Button
+          <button
             type="submit"
-            className="w-full"
+            className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading || !email || !password}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
-          </Button>
+          </button>
 
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don&apos;t have an account? </span>
-            <Link href="/auth/register" className="text-primary font-medium hover:underline">
-              Sign up
-            </Link>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        <div className="text-center">
+          <p className="text-gray-600 mb-3 text-sm">Don&apos;t have an account?</p>
+          <Link href="/auth/register">
+            <button className="w-full py-3 px-4 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+              Create Account
+            </button>
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 }

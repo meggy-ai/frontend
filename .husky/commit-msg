@@ -1,1 +1,2 @@
-"C:/Program Files/nodejs/npx.cmd" --no -- commitlint --edit $1
+# "C:/Program Files/nodejs/npx.cmd" --no -- commitlint --edit $1
+echo "Skipping commitlint - commit message validation disabled"

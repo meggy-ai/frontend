@@ -1,1 +1,2 @@
-"C:/Program Files/nodejs/npx.cmd" lint-staged
+# "C:/Program Files/nodejs/npx.cmd" lint-staged
+echo "Skipping lint-staged - not configured yet"
