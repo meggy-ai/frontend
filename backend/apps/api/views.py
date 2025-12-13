@@ -126,7 +126,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
             response = async_to_sync(chat_service.process_message)(
                 conversation_id=str(conversation.id),
                 user_message=content,
-                agent_id=str(conversation.agent.id)
+                agent_id=str(conversation.agent.id),
+                user_id=str(request.user.id)
             )
             
             # Create assistant message with response
@@ -137,6 +138,19 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 model=response.get('model', conversation.agent.model),
                 tokens_used=response.get('tokens_used', 0)
             )
+            
+            # Extract and save long-term memories from user message (async background task)
+            try:
+                from core.bruno_integration.memory_extraction import memory_extractor
+                async_to_sync(memory_extractor.extract_memories_from_conversation)(
+                    user_id=str(request.user.id),
+                    conversation_text=content,
+                    message_id=str(user_message.id)
+                )
+            except Exception as mem_error:
+                # Don't fail the request if memory extraction fails
+                import logging
+                logging.getLogger(__name__).warning(f"Memory extraction failed: {mem_error}")
             
             return Response({
                 'user_message': MessageSerializer(user_message).data,

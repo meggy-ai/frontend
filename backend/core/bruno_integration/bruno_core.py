@@ -22,16 +22,18 @@ class AgentConfig:
 class BrunoAgent:
     """Core Bruno AI Agent."""
     
-    def __init__(self, config: AgentConfig, llm_client, memory_manager=None):
+    def __init__(self, config: AgentConfig, llm_client, memory_manager=None, notes_ability=None):
         self.config = config
         self.llm_client = llm_client
         self.memory_manager = memory_manager
+        self.notes_ability = notes_ability
         logger.info(f"Initialized BrunoAgent: {config.name} with {config.llm_provider}/{config.model}")
     
     async def process_message(
         self,
         user_message: str,
         conversation_id: str,
+        user_id: str = None,
         context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
@@ -40,12 +42,31 @@ class BrunoAgent:
         Args:
             user_message: The user's input message
             conversation_id: ID of the conversation
+            user_id: ID of the user (for notes functionality)
             context: Additional context for the conversation
             
         Returns:
             Dict containing response, tokens used, and metadata
         """
         try:
+            # Check if this is a notes command
+            if self.notes_ability and user_id:
+                notes_response = await self.notes_ability.handle_notes_command(
+                    user_id=user_id,
+                    conversation_id=conversation_id,
+                    command=user_message
+                )
+                if notes_response:
+                    # This was a notes command - return notes response
+                    return {
+                        "content": notes_response,
+                        "model": self.config.model,
+                        "tokens_used": 0,
+                        "success": True,
+                        "is_notes_response": True
+                    }
+            
+
             # Get conversation history from memory if available
             conversation_history = []
             if self.memory_manager:
@@ -61,6 +82,17 @@ class BrunoAgent:
             messages = [
                 {"role": "system", "content": self.config.system_prompt}
             ]
+            
+            # Inject long-term memories into context if available
+            if user_id:
+                from core.bruno_integration.memory_extraction import memory_extractor
+                memory_context = await memory_extractor.format_memories_for_context(user_id, limit=10)
+                if memory_context:
+                    messages.append({
+                        "role": "system",
+                        "content": memory_context
+                    })
+                    logger.info(f"Injected long-term memories into context for user {user_id}")
             
             # Add conversation history (excluding the last user message if it matches current input)
             # This prevents duplicate messages when the current user message is already in history

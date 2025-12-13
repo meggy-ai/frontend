@@ -28,6 +28,11 @@ class ChatService:
         self.memory_backend = DjangoMemoryBackend(Message, Conversation)
         self.memory_manager = MemoryManager(db_backend=self.memory_backend)
         self.ability_manager = create_default_abilities()
+        
+        # Initialize notes ability
+        from core.bruno_integration.notes_ability import NotesAbility
+        self.notes_ability = NotesAbility()
+        
         logger.info("Initialized ChatService")
     
     async def get_or_create_agent(self, agent_id: str) -> BrunoAgent:
@@ -69,7 +74,8 @@ class ChatService:
         bruno_agent = BrunoAgent(
             config=config,
             llm_client=llm_client,
-            memory_manager=self.memory_manager
+            memory_manager=self.memory_manager,
+            notes_ability=self.notes_ability
         )
         
         # Cache the agent instance
@@ -82,7 +88,8 @@ class ChatService:
         self,
         conversation_id: str,
         user_message: str,
-        agent_id: str
+        agent_id: str,
+        user_id: str = None
     ) -> Dict[str, Any]:
         """
         Process a user message and generate a response.
@@ -91,6 +98,7 @@ class ChatService:
             conversation_id: ID of the conversation
             user_message: User's input message
             agent_id: ID of the agent to use
+            user_id: ID of the user (for notes functionality)
             
         Returns:
             Dict with response content and metadata
@@ -102,7 +110,8 @@ class ChatService:
             # Process message through Bruno agent
             response = await agent.process_message(
                 user_message=user_message,
-                conversation_id=conversation_id
+                conversation_id=conversation_id,
+                user_id=user_id
             )
             
             return response

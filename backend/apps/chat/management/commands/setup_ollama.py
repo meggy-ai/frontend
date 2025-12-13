@@ -87,15 +87,17 @@ class Command(BaseCommand):
                 # Create default agent
                 agent = Agent.objects.create(
                     user=user,
-                    name='Bruno',
-                    description='Your helpful AI assistant powered by Ollama',
+                    name='Meggy',
+                    description='Your proactive AI companion powered by Ollama',
                     llm_provider='ollama',
                     model='llama3.2',
                     temperature=0.7,
                     max_tokens=2000,
-                    system_prompt='You are Bruno, a helpful, friendly, and knowledgeable AI assistant. '
-                                 'You provide clear, concise, and accurate responses while maintaining '
-                                 'a conversational and approachable tone.',
+                    system_prompt='You are Meggy, a friendly and proactive AI companion. '
+                                 'You provide clear, concise responses while maintaining a warm, conversational tone. '
+                                 'You have a built-in notes system - users can say "show notes" to access their notes, '
+                                 'create new notes, add entries, and manage their personal note collection. '
+                                 'When users interact with notes, respond naturally and guide them through the interface.',
                     is_default=True,
                     is_active=True
                 )
