@@ -13,9 +13,11 @@ cryptography==42.0.0
 # bruno-memory==0.1.0
 # bruno-abilities==0.1.0
 
+# Async HTTP client for Ollama
+aiohttp==3.9.1
+
 # LLM Providers
 openai==1.10.0
-# For Ollama support, we'll use requests
 requests==2.31.0
 
 # Utilities

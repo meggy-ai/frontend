@@ -118,6 +118,11 @@ export const agentsAPI = {
     return response.data;
   },
 
+  getDefault: async () => {
+    const response = await api.get("/agents/default/");
+    return response.data;
+  },
+
   getById: async (id: string) => {
     const response = await api.get(`/agents/${id}/`);
     return response.data;
@@ -153,6 +158,13 @@ export const conversationsAPI = {
 
   create: async (data: any) => {
     const response = await api.post("/conversations/", data);
+    return response.data;
+  },
+
+  sendMessage: async (id: string, content: string) => {
+    const response = await api.post(`/conversations/${id}/send_message/`, {
+      content,
+    });
     return response.data;
   },
 

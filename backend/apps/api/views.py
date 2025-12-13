@@ -2,9 +2,11 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
+from asgiref.sync import async_to_sync
 from apps.accounts.models import User
 from apps.agents.models import Agent
 from apps.chat.models import Conversation, Message
+from core.services import chat_service
 from .serializers import (
     UserSerializer, UserCreateSerializer,
     AgentSerializer,
@@ -94,19 +96,44 @@ class ConversationViewSet(viewsets.ModelViewSet):
             content=content
         )
         
-        # TODO: Call LLM service to generate response
-        # For now, return a placeholder response
-        assistant_message = Message.objects.create(
-            conversation=conversation,
-            role='assistant',
-            content='This is a placeholder response. LLM integration coming soon.',
-            model=conversation.agent.model
-        )
-        
-        return Response({
-            'user_message': MessageSerializer(user_message).data,
-            'assistant_message': MessageSerializer(assistant_message).data
-        })
+        try:
+            # Process message through Bruno chat service
+            response = async_to_sync(chat_service.process_message)(
+                conversation_id=str(conversation.id),
+                user_message=content,
+                agent_id=str(conversation.agent.id)
+            )
+            
+            # Create assistant message with response
+            assistant_message = Message.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=response.get('content', 'I apologize, but I encountered an error.'),
+                model=response.get('model', conversation.agent.model),
+                tokens_used=response.get('tokens_used', 0)
+            )
+            
+            return Response({
+                'user_message': MessageSerializer(user_message).data,
+                'assistant_message': MessageSerializer(assistant_message).data,
+                'success': response.get('success', True)
+            })
+            
+        except Exception as e:
+            # Create error response message
+            assistant_message = Message.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content='I apologize, but I encountered an error processing your message. Please try again.',
+                model=conversation.agent.model
+            )
+            
+            return Response({
+                'user_message': MessageSerializer(user_message).data,
+                'assistant_message': MessageSerializer(assistant_message).data,
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class MessageViewSet(viewsets.ReadOnlyModelViewSet):
