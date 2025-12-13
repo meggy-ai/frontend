@@ -14,13 +14,7 @@ class OllamaClient:
     
     def __init__(self, base_url: str = "http://localhost:11434"):
         self.base_url = base_url.rstrip('/')
-        self.session: Optional[aiohttp.ClientSession] = None
         logger.info(f"Initialized OllamaClient with base_url: {self.base_url}")
-    
-    async def _ensure_session(self):
-        """Ensure aiohttp session exists."""
-        if self.session is None or self.session.closed:
-            self.session = aiohttp.ClientSession()
     
     async def generate(
         self,
@@ -43,8 +37,6 @@ class OllamaClient:
         Returns:
             Dict with 'content', 'tokens_used', and other metadata
         """
-        await self._ensure_session()
-        
         try:
             # Convert messages to Ollama format
             prompt = self._messages_to_prompt(messages)
@@ -61,34 +53,36 @@ class OllamaClient:
             
             url = f"{self.base_url}/api/generate"
             
-            async with self.session.post(url, json=payload) as response:
-                if response.status != 200:
-                    error_text = await response.text()
-                    raise Exception(f"Ollama API error: {response.status} - {error_text}")
-                
-                if stream:
-                    # Handle streaming response
-                    full_response = ""
-                    async for line in response.content:
-                        if line:
-                            data = json.loads(line.decode('utf-8'))
-                            if 'response' in data:
-                                full_response += data['response']
+            # Create a new session for each request to avoid event loop issues with async_to_sync
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload) as response:
+                    if response.status != 200:
+                        error_text = await response.text()
+                        raise Exception(f"Ollama API error: {response.status} - {error_text}")
                     
-                    return {
-                        "content": full_response,
-                        "model": model,
-                        "tokens_used": 0  # Ollama doesn't provide token count in streaming
-                    }
-                else:
-                    # Handle non-streaming response
-                    data = await response.json()
-                    
-                    return {
-                        "content": data.get('response', ''),
-                        "model": model,
-                        "tokens_used": data.get('eval_count', 0)
-                    }
+                    if stream:
+                        # Handle streaming response
+                        full_response = ""
+                        async for line in response.content:
+                            if line:
+                                data = json.loads(line.decode('utf-8'))
+                                if 'response' in data:
+                                    full_response += data['response']
+                        
+                        return {
+                            "content": full_response,
+                            "model": model,
+                            "tokens_used": 0  # Ollama doesn't provide token count in streaming
+                        }
+                    else:
+                        # Handle non-streaming response
+                        data = await response.json()
+                        
+                        return {
+                            "content": data.get('response', ''),
+                            "model": model,
+                            "tokens_used": data.get('eval_count', 0)
+                        }
                     
         except Exception as e:
             logger.error(f"Error generating response with Ollama: {str(e)}", exc_info=True)
@@ -114,18 +108,17 @@ class OllamaClient:
     
     async def list_models(self) -> List[str]:
         """List available Ollama models."""
-        await self._ensure_session()
-        
         try:
             url = f"{self.base_url}/api/tags"
-            async with self.session.get(url) as response:
-                if response.status != 200:
-                    raise Exception(f"Failed to list models: {response.status}")
-                
-                data = await response.json()
-                models = [model['name'] for model in data.get('models', [])]
-                logger.info(f"Available Ollama models: {models}")
-                return models
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        raise Exception(f"Failed to list models: {response.status}")
+                    
+                    data = await response.json()
+                    models = [model['name'] for model in data.get('models', [])]
+                    logger.info(f"Available Ollama models: {models}")
+                    return models
                 
         except Exception as e:
             logger.error(f"Error listing Ollama models: {str(e)}", exc_info=True)
@@ -133,27 +126,25 @@ class OllamaClient:
     
     async def pull_model(self, model: str) -> bool:
         """Pull a model from Ollama registry."""
-        await self._ensure_session()
-        
         try:
             url = f"{self.base_url}/api/pull"
             payload = {"name": model}
             
-            async with self.session.post(url, json=payload) as response:
-                if response.status != 200:
-                    raise Exception(f"Failed to pull model: {response.status}")
-                
-                logger.info(f"Successfully pulled model: {model}")
-                return True
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload) as response:
+                    if response.status != 200:
+                        raise Exception(f"Failed to pull model: {response.status}")
+                    
+                    logger.info(f"Successfully pulled model: {model}")
+                    return True
                 
         except Exception as e:
             logger.error(f"Error pulling Ollama model: {str(e)}", exc_info=True)
             return False
     
     async def close(self):
-        """Close the aiohttp session."""
-        if self.session and not self.session.closed:
-            await self.session.close()
+        """Close method for compatibility (no-op since we don't maintain a session)."""
+        pass
 
 
 class LLMFactory:

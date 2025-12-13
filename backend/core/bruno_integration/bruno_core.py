@@ -79,18 +79,8 @@ class BrunoAgent:
                 max_tokens=self.config.max_tokens
             )
             
-            # Store in memory if available
-            if self.memory_manager:
-                await self.memory_manager.add_message(
-                    conversation_id=conversation_id,
-                    role="user",
-                    content=user_message
-                )
-                await self.memory_manager.add_message(
-                    conversation_id=conversation_id,
-                    role="assistant",
-                    content=response["content"]
-                )
+            # Note: Messages are saved to database by views.py, not here
+            # Memory manager only reads from database for conversation history
             
             return {
                 "content": response["content"],
