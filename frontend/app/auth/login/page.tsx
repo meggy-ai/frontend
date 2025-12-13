@@ -2,23 +2,42 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bot, Mail, Lock, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bot, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
+import { authAPI } from "@/lib/api";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // TODO: Implement actual login logic
-    console.log("Login:", { email, password });
-
-    setTimeout(() => {
+    try {
+      const response = await authAPI.login(email, password);
+      
+      // Store tokens and user data
+      localStorage.setItem("access_token", response.access_token);
+      localStorage.setItem("refresh_token", response.refresh_token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.error || 
+        err.response?.data?.message ||
+        "Failed to login. Please check your credentials and try again."
+      );
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -51,7 +70,7 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
+            <h1 className="text-3xl font-bold mb-2 text-zinc-900 dark:text-white">Welcome back</h1>
             <p className="text-zinc-600 dark:text-zinc-400">
               Sign in to your account to continue
             </p>
@@ -59,11 +78,19 @@ export default function LoginPage() {
 
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 shadow-lg">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                </div>
+              )}
+
               {/* Email Field */}
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium mb-2"
+                  className="block text-sm font-medium mb-2 text-zinc-900 dark:text-zinc-100"
                 >
                   Email address
                 </label>
@@ -74,7 +101,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                     placeholder="you@example.com"
                     required
                   />
@@ -85,7 +112,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium mb-2"
+                  className="block text-sm font-medium mb-2 text-zinc-900 dark:text-zinc-100"
                 >
                   Password
                 </label>
@@ -96,7 +123,7 @@ export default function LoginPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                     placeholder="••••••••"
                     required
                   />
